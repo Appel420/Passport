@@ -1,51 +1,59 @@
 # Branch policy
 
-**Do not hardcode `main`.**
+**Invariant:** No repository operation may assume `main`, `master`, `base`, `develop`, or any other fixed branch name. Branch selection must be resolved per repository and recorded in the operation evidence.
 
-## Integration branch
+## Resolution contract (fail closed)
 
-- Working / integration branch: **`base`**
-- `main` may exist as a historical default from repo creation; it is not the assumed target.
-- All new commits for Passport go to **`base`** unless a feature branch is named explicitly.
-
-## Resolve the branch (scripts / CI / agents)
-
-Never assume:
-
-```text
-https://raw.githubusercontent.com/OWNER/REPO/main/...
+```
+Explicit BASE_BRANCH / PASSPORT_BRANCH / GIT_BRANCH
+       ↓
+Branch exists on remote?
+       ↓
+YES → use it
+NO  → resolve repository default_branch (GET /repos/{owner}/{repo})
+       ↓
+Default exists on remote?
+       ↓
+YES → use it
+NO  → FAIL CLOSED (DENY)
 ```
 
-Resolve in this order:
+There is **no** silent fallback to `main`, `base`, or “first listed branch.” Branch list order is not an authority decision.
 
-1. Explicit env override: `PASSPORT_BRANCH` or `GIT_BRANCH`
-2. If branch **`base`** exists on the remote → use `base`
-3. Else GitHub API `default_branch` from `GET /repos/{owner}/{repo}`
-4. Else first available branch from `GET /repos/{owner}/{repo}/branches`
-
-Raw URL form:
-
-```text
-https://raw.githubusercontent.com/{owner}/{repo}/{resolved_branch}/{path}
-```
-
-Git refs:
-
-```text
-refs/heads/{resolved_branch}
-```
-
-## Setting GitHub default
-
-To make GitHub treat `base` as the repository default (PRs, clone HEAD, Actions defaults):
-
-1. Open https://github.com/Appel420/Passport/settings
-2. Branches → Default branch → switch to **`base`**
-
-API equivalent (requires admin token):
+## Fetch pattern
 
 ```bash
-gh api repos/Appel420/Passport -X PATCH -f default_branch=base
+BRANCH="$(python3 scripts/resolve_branch.py Appel420 Passport)" || exit 1
+curl -fsSL \
+  "https://raw.githubusercontent.com/Appel420/Passport/${BRANCH}/verify.py"
 ```
 
-Until that is set, API `default_branch` may still report `main`. Scripts must still prefer `base` when present.
+Wrong (hardcoded assumption):
+
+```text
+https://raw.githubusercontent.com/Appel420/Passport/main/
+```
+
+## Explicit working branch for this repo
+
+If `base` is the intended integration line for Passport, set it **explicitly**:
+
+```bash
+export BASE_BRANCH=base
+# or
+export PASSPORT_BRANCH=base
+```
+
+Do not bake that preference into shared resolvers as a universal rule.
+
+Changing GitHub’s repository `default_branch` is a **separate administration operation**. It is not required for safe resolution when `BASE_BRANCH` is set and verified.
+
+## Evidence
+
+Every resolve operation should record:
+
+- owner / repo
+- source of selection (`env:BASE_BRANCH` | `api:default_branch`)
+- resolved branch name
+- whether existence was verified
+- outcome: `ALLOW` | `DENY`
