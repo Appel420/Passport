@@ -55,7 +55,6 @@ def test_fingerprint_deterministic():
     fp2 = rec.fingerprint()
     assert fp1 == fp2
     assert len(fp1) == 16
-    # fingerprint changes when content changes
     rec2 = make_record(
         query="q2", answer="a", model="m",
         contributions=[Contribution(creator_id="x", role="author", portion=1.0)],
@@ -64,9 +63,6 @@ def test_fingerprint_deterministic():
 
 
 def test_fingerprint_canonicalization():
-    # Two records with same logical content must fingerprint identically
-    # regardless of contribution list order (asdict preserves order, so
-    # we test that sort_keys=True in fingerprint handles key ordering).
     s1 = Source(kind="web", ref="https://example.com", weight=0.5)
     s2 = Source(kind="repo", ref="abc123", weight=0.5)
     c1 = Contribution(creator_id="a", role="author", portion=0.6, sources=[s1, s2])
@@ -74,8 +70,6 @@ def test_fingerprint_canonicalization():
     rec = make_record(
         query="q", answer="a", model="m", contributions=[c1, c2],
     )
-    payload = json.dumps(rec.__dict__ if hasattr(rec, '__dict__') else {}, sort_keys=True, default=str)
-    # Just ensure fingerprint runs without error on nested structures
     assert rec.fingerprint() is not None
 
 
@@ -95,7 +89,7 @@ def test_to_json_roundtrip():
     assert data["citations"] == ["https://example.com"]
 
 
-def test_to_json_writes_file(tmp_path=None):
+def test_to_json_writes_file():
     import tempfile
     rec = make_record(
         query="q", answer="a", model="m",
@@ -148,7 +142,6 @@ def test_contribution_defaults():
 
 
 if __name__ == "__main__":
-    # Minimal runner so this works with zero test framework
     tests = [v for k, v in list(globals().items()) if k.startswith("test_") and callable(v)]
     passed = failed = 0
     for t in tests:
