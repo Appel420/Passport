@@ -1,0 +1,49 @@
+{
+  "passport_version": "0.1.0",
+  "owner": {
+    "account_id": "Appel420",
+    "display_name": "Derek Appel",
+    "sovereign_owner_id": "sovereign-owner-appel420"
+  },
+  "issued_at": 1780000000,
+  "expires_at": null,
+  "nonce": "example-nonce-001",
+  "builds": [
+    {
+      "build_id": "sovereignty-ai-gate",
+      "name": "Sovereignty AI Gate",
+      "description": "User-rooted authority framework verifying identity, permissions, memory, and AI actions through deterministic trust boundaries.",
+      "first_seen": "2026-07-13T13:19:42Z",
+      "attribution": "lead",
+      "repository": "https://github.com/Appel420/Sovereignty-AI-Gate",
+      "evidence": [
+        {
+          "type": "commit",
+          "hash": "793dcfc5a953ca8098a5f6750f5fccbec13997da",
+          "url": "https://github.com/Appel420/Sovereignty-AI-Gate/commit/793dcfc5a953ca8098a5f6750f5fccbec13997da"
+        }
+      ]
+    },
+    {
+      "build_id": "gitsovereign",
+      "name": "GitSovereign",
+      "description": "Sovereign Git hosting layer. Phone-first local albums and family-tree memory vaults.",
+      "first_seen": "2026-09-21T12:12:36Z",
+      "attribution": "lead",
+      "repository": "https://github.com/Appel420/GitSovereign"
+    },
+    {
+      "build_id": "sovereignty-grok-discord",
+      "name": "Sovereignty-Grok-Discord",
+      "description": "Deployable Grok Discord bot with attribution-first, provenance-tracked responses.",
+      "first_seen": "2026-09-24T18:03:36Z",
+      "attribution": "lead",
+      "repository": "https://github.com/Appel420/Sovereignty-Grok-Discord"
+    }
+  ],
+  "signature": {
+    "algorithm": "Ed25519",
+    "value": "<base64-encoded-signature>",
+    "public_key": "<base64-encoded-public-key>"
+  }
+}

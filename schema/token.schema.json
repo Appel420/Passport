@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Appel420/Passport/blob/main/schema/token.schema.json",
+  "title": "Passport Token v0.1.0",
+  "description": "Signed, portable builder identity and provenance record. Carries account identity, build history, and contribution timestamps across apps and sessions.",
+  "type": "object",
+  "required": ["passport_version", "owner", "issued_at", "expires_at", "nonce", "builds", "signature"],
+  "properties": {
+    "passport_version": {
+      "type": "string",
+      "const": "0.1.0",
+      "description": "Schema version. Breaking changes require a new major version."
+    },
+    "owner": {
+      "type": "object",
+      "required": ["account_id", "display_name"],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "description": "Stable builder identifier (e.g., GitHub login or sovereign owner ID)."
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable builder name."
+        },
+        "sovereign_owner_id": {
+          "type": "string",
+          "description": "Optional sovereign owner identifier from Sovereignty-AI-Gate."
+        }
+      }
+    },
+    "issued_at": {
+      "type": "integer",
+      "description": "Unix timestamp of token issuance."
+    },
+    "expires_at": {
+      "type": "integer",
+      "description": "Unix timestamp of token expiry. Null means no expiry."
+    },
+    "nonce": {
+      "type": "string",
+      "description": "Unique per-issuance value for replay protection."
+    },
+    "builds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["build_id", "name", "first_seen", "attribution"],
+        "properties": {
+          "build_id": {
+            "type": "string",
+            "description": "Stable identifier for the build."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of earliest verifiable appearance."
+          },
+          "attribution": {
+            "type": "string",
+            "description": "How the builder is credited (e.g., 'lead', 'support', 'co-author')."
+          },
+          "repository": {
+            "type": "string",
+            "description": "URL of the build's repository."
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "commit, blob, release, or issue"
+                },
+                "hash": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "description": "Signing algorithm (e.g., Ed25519)."
+        },
+        "value": {
+          "type": "string",
+          "description": "Base64-encoded signature over the canonical token payload."
+        },
+        "public_key": {
+          "type": "string",
+          "description": "Base64-encoded public key for verification."
+        }
+      }
+    }
+  }
+}
