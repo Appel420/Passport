@@ -8,10 +8,15 @@ import json
 import hashlib
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 
 SCHEMA_VERSION = "0.1.0"
+
+
+def default_opt_in() -> Dict[str, bool]:
+    """Deny-by-default toggles: training, remixing, redistribution."""
+    return {"training": False, "remixing": False, "redistribution": False}
 
 
 @dataclass
@@ -42,7 +47,8 @@ class ProvenanceRecord:
     model: str
     contributions: List[Contribution]
     citations: List[str] = field(default_factory=list)
-    opt_in: dict[str, bool] = field(default_factory=dict)   # creator_id -> training/remix/redistribute
+    # creator_id -> {training, remixing, redistribution}; missing = all False
+    opt_in: Dict[str, Dict[str, bool]] = field(default_factory=dict)
     parent_id: Optional[str] = None  # for remix chains
 
     def fingerprint(self) -> str:
@@ -58,6 +64,20 @@ class ProvenanceRecord:
                 f.write("\n")
         return s
 
+    def set_opt_in(
+        self,
+        creator_id: str,
+        *,
+        training: bool = False,
+        remixing: bool = False,
+        redistribution: bool = False,
+    ) -> None:
+        self.opt_in[creator_id] = {
+            "training": training,
+            "remixing": remixing,
+            "redistribution": redistribution,
+        }
+
 
 def make_record(
     query: str,
@@ -67,6 +87,7 @@ def make_record(
     citations: Optional[List[str]] = None,
     parent_id: Optional[str] = None,
     record_id: Optional[str] = None,
+    opt_in: Optional[Dict[str, Dict[str, bool]]] = None,
 ) -> ProvenanceRecord:
     """Create a new provenance record. Uses time_ns() to avoid same-second collisions."""
     now_ns = time.time_ns()
@@ -79,6 +100,7 @@ def make_record(
         model=model,
         contributions=contributions,
         citations=citations or [],
+        opt_in=opt_in or {},
         parent_id=parent_id,
     )
     return rec
